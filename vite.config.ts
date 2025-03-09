@@ -10,24 +10,35 @@ import { fileURLToPath } from 'url'
 // import { visualizer } from 'rollup-plugin-visualizer'
 
 export default ({ mode }) => {
+  // 当前的工作目录为root
   const root = process.cwd()
+  // 加载环境变量
   const env = loadEnv(mode, root)
+  // 解构环境变量
   const { VITE_VERSION, VITE_PORT, VITE_BASE_URL, VITE_API_URL } = env
-
+  // 打印环境变量
   console.log(`🚀 API_URL = ${VITE_API_URL}`)
   console.log(`🚀 VERSION = ${VITE_VERSION}`)
 
   return defineConfig({
+    // 定义全局变量
     define: {
       __APP_VERSION__: JSON.stringify(VITE_VERSION)
     },
+    // 设置项目基础路径
     base: VITE_BASE_URL,
+    // 设置项目端口
     server: {
       port: parseInt(VITE_PORT),
+      // 设置代理
       proxy: {
+        // 设置代理路径
         '/api': {
+          // 设置代理目标
           target: VITE_API_URL,
+          // 设置代理是否改变源
           changeOrigin: true,
+          // 设置代理重写路径
           rewrite: (path) => path.replace(/^\/api/, '')
         }
       },
@@ -49,9 +60,13 @@ export default ({ mode }) => {
       }
     },
     build: {
+      // 设置ts构建目标为ES2015
       target: 'es2015',
+      // 设置输出目录
       outDir: 'dist',
+      // 设置chunk大小警告限制
       chunkSizeWarningLimit: 2000,
+      // 设置压缩方式
       minify: 'terser',
       terserOptions: {
         compress: {
