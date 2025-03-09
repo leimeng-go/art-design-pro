@@ -31,6 +31,7 @@ export default ({ mode }) => {
           rewrite: (path) => path.replace(/^\/api/, '')
         }
       },
+      // 允许外部访问
       host: true
     },
     // 路径别名
