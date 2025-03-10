@@ -74,16 +74,22 @@ export default ({ mode }) => {
           drop_debugger: true // 生产环境去除 debugger
         }
       },
+      // 设置rollupOptions，Rollup 是 Vite 的底层打包工具，Vite 的打包配置基于 Rollup 的配置
       rollupOptions: {
         output: {
           manualChunks: {
+            // 将核心依赖打包到 vendor 中,将相关核心库单独打包，因为这些库很少会变动
             vendor: ['vue', 'vue-router', 'pinia', 'element-plus']
           }
         }
       },
+      // 动态导入，按需加载
       dynamicImportVarsOptions: {
+        // 当动态导入变量出现错误时，发出警告，这个有助于在开发过程中及时发现和修复动态导入相关的问题
         warnOnError: true,
+        // 排除的文件
         exclude: [],
+        // 包含的文件
         include: ['src/views/**/*.vue']
       }
     },
@@ -91,20 +97,32 @@ export default ({ mode }) => {
       vue(),
       // 自动导入 components 下面的组件，无需 import 引入
       Components({
+        // 搜索子目录
         deep: true,
+        // 组件后缀
         extensions: ['vue'],
+        // 组件目录
         dirs: ['src/components'], // 自动导入的组件目录
+        // Element Plus 组件解析
         resolvers: [ElementPlusResolver()],
-        dts: 'src/types/components.d.ts' // 指定类型声明文件的路径
+        // 类型申明文件路径
+        dts: 'src/types/components.d.ts'
       }),
+      // API 自动导入插件配置，不需要在每个文件手动import组件
       AutoImport({
+        // 自动导入这些库常用的API
         imports: ['vue', 'vue-router', '@vueuse/core', 'pinia'],
+        // ElementPlusResolver 是一个解析器，用于识别和自动导入Element Plus的组件，这样可以直接在模版中使用Element Plus的组件，而无需手动import
         resolvers: [ElementPlusResolver()],
+        // 生成一个类型申明文件，这个文件包含了自动导入的API的类型信息，帮助TypeScript提供更好的类型检查和自动补全
         dts: 'src/types/auto-imports.d.ts',
+        // eslintrc配置
         eslintrc: {
           // 这里先设置成true然后pnpm dev 运行之后会生成 .auto-import.json 文件之后，在改为false
           enabled: true,
+          // 指定生成的ESlint配置文件路径
           filepath: './.auto-import.json',
+          // 将自动导入的API作为全局变量处理，避免ESlint报未定义错误
           globalsPropValue: true
         }
       }),
@@ -160,7 +178,7 @@ export default ({ mode }) => {
       //   }
       // })
     ],
-    // 预加载项目必需的组件
+    // 预加载项目必需的组件，vite会在启动时预先构建指定的依赖项，这些依赖项会被打包成单个文件，以减少模块解析和请求的开销
     optimizeDeps: {
       include: [
         'vue',
