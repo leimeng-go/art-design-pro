@@ -19,6 +19,7 @@ const modules: Record<string, () => Promise<any>> = import.meta.glob('../../view
  * @param menuList 接口返回的菜单列表
  */
 function registerAsyncRoutes(router: Router, menuList: MenuListType[]): void {
+  // iframe 类型的路由是一种特殊的路由实现方式，它通过在页面中嵌入iframe元素来加载外部页面或者系统，同时保持在当前应用的框架内。
   // 用于局部收集 iframe 类型路由
   const iframeRoutes: MenuListType[] = []
   // 遍历菜单列表，注册路由

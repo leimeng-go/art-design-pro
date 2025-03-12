@@ -20,7 +20,7 @@ import { setWorktab } from '@/utils/worktab'
 import { registerAsyncRoutes } from './modules/dynamicRoutes'
 import { formatMenuTitle } from '@/utils/menu'
 
-/** 顶部进度条配置 */
+/** 顶部进度条配置，路由切换的进度条*/
 NProgress.configure({
   easing: 'ease',
   speed: 600,
@@ -192,6 +192,7 @@ router.beforeEach(async (to, from, next) => {
  * @throws 若菜单列表为空或获取失败则抛出错误
  */
 async function getMenuData(): Promise<void> {
+  // 使用try catch 捕获异常
   try {
     // 获取菜单列表
     const { menuList, closeLoading } = await menuService.getMenuList()
