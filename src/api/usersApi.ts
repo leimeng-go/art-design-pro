@@ -1,33 +1,56 @@
 // import request from '@/utils/http'
 // import { BaseResult } from '@/types/axios'
-import { SystemInfo } from '@/config/setting'
 import { BaseResult } from '@/types/axios'
 import { UserInfo } from '@/types/store'
 import avatar from '@imgs/user/avatar.png'
+import axios from 'axios'
 
 export class UserService {
-  // 模拟登录接口
-  static login(options: { body: string }): Promise<BaseResult> {
-    return new Promise((resolve) => {
-      const { username, password } = JSON.parse(options.body)
+  private static baseUrl = import.meta.env.VITE_API_URL
 
-      if (username === SystemInfo.login.username && password === SystemInfo.login.password) {
-        resolve({
-          code: 200,
-          message: '登录成功',
-          data: {
-            accessToken:
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvaG4gU25vdyIsImlhdCI6MTcwNjg2NTYwMCwiZXhwIjoxNzA2OTUyMDAwfQ.8f9D4kJ2m3XlH5Q0y6Z1r2Y3n4X5pL6q8K9v2W3n4X5'
-          }
-        })
-      } else {
-        resolve({
-          code: 401,
-          message: '用户名或密码错误',
+  // 登录接口
+  static async login(options: { body: string }): Promise<BaseResult> {
+    try {
+      console.log(options.body)
+      const response = await axios.post(`${this.baseUrl}/auth/login`, JSON.parse(options.body), {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        validateStatus: () => {
+          // 让 axios 不自动抛出除了网络错误之外的错误，我们自己处理所有状态码
+          return true
+        }
+      })
+
+      // 明确处理 HTTP 状态码
+      if (response.status !== 200) {
+        return {
+          code: response.status,
+          message: response.data?.message || `HTTP 错误: ${response.status}`,
           data: null
-        })
+        }
       }
-    })
+
+      // 处理业务状态码，确保 code 正确
+      if (response.data && response.data.code !== 200) {
+        return response.data
+      }
+
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return {
+          code: error.response?.status || 500,
+          message: error.response?.data?.message || '登录失败，请稍后重试',
+          data: null
+        }
+      }
+      return {
+        code: 500,
+        message: '登录失败，请稍后重试',
+        data: null
+      }
+    }
   }
 
   // 获取用户信息

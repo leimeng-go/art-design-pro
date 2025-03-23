@@ -9,7 +9,7 @@ export const ElementPlusTheme = {
 // 系统信息
 export const SystemInfo = {
   // 系统名称
-  name: 'Art Design Pro',
+  name: '我的后台管理系统',
   // 登录默认帐号、密码
   login: {
     username: 'admin',
