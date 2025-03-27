@@ -185,7 +185,7 @@
             userStore.setToken(res.data.accessToken)
 
             // 获取用户信息
-            const userRes = await UserService.getUserInfo()
+            const userRes = await UserService.getUserInfo(res.data.userId)
             if (userRes.code === ApiStatus.success) {
               userStore.setUserInfo(userRes.data)
             }

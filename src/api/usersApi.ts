@@ -21,18 +21,19 @@ export class UserService {
           return true
         }
       })
+      console.log(response)
 
       // 明确处理 HTTP 状态码
       if (response.status !== 200) {
         return {
-          code: response.status,
+          code: response.data.code,
           message: response.data?.message || `HTTP 错误: ${response.status}`,
           data: null
         }
       }
 
       // 处理业务状态码，确保 code 正确
-      if (response.data && response.data.code !== 200) {
+      if (response.data && response.data.code !== 0) {
         return response.data
       }
 
@@ -54,7 +55,8 @@ export class UserService {
   }
 
   // 获取用户信息
-  static getUserInfo(): Promise<BaseResult<UserInfo>> {
+  static getUserInfo(userid: string): Promise<BaseResult<UserInfo>> {
+    console.log(userid)
     return new Promise((resolve) => {
       resolve({
         code: 200,
