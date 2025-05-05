@@ -38,14 +38,7 @@ export class UserService {
       }
 
       return response.data
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        return {
-          code: error.response?.status || 500,
-          message: error.response?.data?.message || '登录失败，请稍后重试',
-          data: null
-        }
-      }
+    } catch {
       return {
         code: 500,
         message: '登录失败，请稍后重试',

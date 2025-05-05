@@ -4,7 +4,6 @@
  */
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { MenuListType } from '@/types/menu'
-import { RoutesAlias } from './routesAlias'
 import { saveIframeRoutes } from '@/utils/menu'
 
 /**
@@ -120,10 +119,7 @@ function handleLayoutRoute(
 // 处理普通路由
 function handleNormalRoute(converted: any, component: string | undefined, routeName: string): void {
   if (component) {
-    converted.component = component
-      ? RoutesAlias[component as keyof typeof RoutesAlias] ||
-        loadComponent(component as string, routeName)
-      : undefined
+    converted.component = component ? loadComponent(component as string, routeName) : undefined
   }
 }
 
