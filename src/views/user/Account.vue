@@ -95,6 +95,9 @@
         <el-form-item label="手机号" prop="phone">
           <el-input v-model="formData.phone" />
         </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="formData.email" />
+        </el-form-item>
         <el-form-item label="性别" prop="sex">
           <el-select v-model="formData.sex">
             <el-option label="男" value="男" />
@@ -124,13 +127,15 @@
   import { FormInstance } from 'element-plus'
   import { ElMessageBox, ElMessage } from 'element-plus'
   import type { FormRules } from 'element-plus'
-
+  import { UserService } from '@/api/usersApi'
+  import { ApiStatus } from '@/utils/http/status'
   const dialogType = ref('add')
   const dialogVisible = ref(false)
 
   const formData = reactive({
     username: '',
     phone: '',
+    email: '',
     sex: '',
     dep: ''
   })
@@ -267,10 +272,30 @@
   const handleSubmit = async () => {
     if (!formRef.value) return
 
-    await formRef.value.validate((valid) => {
+    await formRef.value.validate(async (valid) => {
       if (valid) {
-        ElMessage.success(dialogType.value === 'add' ? '添加成功' : '更新成功')
-        dialogVisible.value = false
+        try {
+          const res = await UserService.addUser({
+            body: JSON.stringify({
+              username: formData.username,
+              phone: formData.phone,
+              email: formData.email,
+              sex: formData.sex,
+              dep: formData.dep
+            })
+          })
+          if (res.code === ApiStatus.success) {
+            ElMessage.success(dialogType.value === 'add' ? '添加成功' : '更新成功')
+            dialogVisible.value = false
+          } else {
+            ElMessage.error(res.message)
+            dialogVisible.value = false
+          }
+        } catch (error) {
+          console.log(error)
+          ElMessage.error('添加用户失败，请稍后重试')
+          dialogVisible.value = false
+        }
       }
     })
   }

@@ -18,7 +18,6 @@ export interface BaseResult<T = any> {
   code: number // 状态码
   message: string // 消息
   data: T // 数据
-  token?: string // 可选字段，用于返回 token
 }
 
 // 分页数据结构，继承基础结果结构

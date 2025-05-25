@@ -2,8 +2,7 @@
 // import { BaseResult } from '@/types/axios'
 import { BaseResult } from '@/types/axios'
 import { UserInfo } from '@/types/store'
-import avatar from '@imgs/user/avatar.png'
-import axios from 'axios'
+import api from '@/utils/http'
 
 export class UserService {
   private static baseUrl = import.meta.env.VITE_API_URL
@@ -11,33 +10,17 @@ export class UserService {
   // 登录接口
   static async login(options: { body: string }): Promise<BaseResult> {
     try {
-      console.log(options.body)
-      const response = await axios.post(`${this.baseUrl}/auth/login`, JSON.parse(options.body), {
+      // console.log(options.body)
+      const response = await api.post<BaseResult>({
+        url: '/auth/login',
+        data: JSON.parse(options.body),
         headers: {
           'Content-Type': 'application/json'
-        },
-        validateStatus: () => {
-          // 让 axios 不自动抛出除了网络错误之外的错误，我们自己处理所有状态码
-          return true
         }
       })
-      console.log(response)
-
-      // 明确处理 HTTP 状态码
-      if (response.status !== 200) {
-        return {
-          code: response.data.code,
-          message: response.data?.message || `HTTP 错误: ${response.status}`,
-          data: null
-        }
-      }
-
-      // 处理业务状态码，确保 code 正确
-      if (response.data && response.data.code !== 0) {
-        return response.data
-      }
-
-      return response.data
+      // 明确处理 HTTP 状态码和业务状态码
+      console.log('登陆后的响应内容:' + response)
+      return response
     } catch {
       return {
         code: 500,
@@ -48,20 +31,39 @@ export class UserService {
   }
 
   // 获取用户信息
-  static getUserInfo(userid: string): Promise<BaseResult<UserInfo>> {
-    console.log(userid)
-    return new Promise((resolve) => {
-      resolve({
-        code: 200,
-        message: '获取用户信息成功',
-        data: {
-          id: 1,
-          name: '张三',
-          username: 'John Snow',
-          avatar: avatar,
-          email: 'art.design@gmail.com'
+  static async getUserInfo(userid: string): Promise<BaseResult<UserInfo>> {
+    try {
+      const response = await api.get<BaseResult<UserInfo>>({
+        url: '/user/info',
+        params: { userid }
+      })
+      return response
+    } catch {
+      return {
+        code: 500,
+        message: '获取用户信息失败，请稍后重试',
+        data: null as any
+      }
+    }
+  }
+
+  // 新增用户接口
+  static async addUser(options: { body: string }): Promise<BaseResult> {
+    try {
+      const response = await api.post<BaseResult>({
+        url: '/user/add',
+        data: JSON.parse(options.body),
+        headers: {
+          'Content-Type': 'application/json'
         }
       })
-    })
+      return response
+    } catch {
+      return {
+        code: 500,
+        message: '新增用户失败，请稍后重试',
+        data: null
+      }
+    }
   }
 }

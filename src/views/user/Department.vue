@@ -45,9 +45,14 @@
         <el-form-item label="排序" prop="sort">
           <el-input v-model="formData.sort" />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-switch v-model="formData.status" />
+        <el-form-item label="上级部门" prop="parent_id">
+          <el-select v-model="formData.parentId" placeholder="请选择上级部门">
+            <el-option label="请选择上级部门" value="" />
+          </el-select>
         </el-form-item>
+        <!-- <el-form-item label="状态" prop="status">
+          <el-switch v-model="formData.status" />
+        </el-form-item> -->
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -62,22 +67,67 @@
 <script setup lang="ts">
   import { ElMessageBox, ElMessage } from 'element-plus'
   import type { FormInstance, FormRules } from 'element-plus'
+  import { EntityService } from '@/api/entityApi'
+  import { ApiStatus } from '@/utils/http/status'
 
   const dialogType = ref('add')
   const dialogVisible = ref(false)
 
   const formData = reactive({
+    entityId: 4,
     name: '',
-    sort: '1',
+    sort: 1,
+    parentId: 0,
     status: true
   })
+  interface Department {
+    id: number
+    name: string
+    sort: number
+    status: number
+    createTime?: string
+    updateTime?: string
+    date?: string
+  }
 
-  const tableData = reactive([
+  let tableData = reactive<Department[]>([])
+
+  onMounted(() => {
+    console.log('Department component is now mounted !')
+    const fetchDepartmentList = async () => {
+      try {
+        const response = await EntityService.getDepartmentList({
+          params: {
+            page: 1,
+            pageSize: 10
+          }
+          // Merge pagination parameters into options.params
+        })
+        if (response.code === ApiStatus.success) {
+          console.log('Department list fetched successfully:', response.data)
+          console.log(response.data.list)
+          // 清空数组
+          // tableData.length=0
+          // tableData.push(...response.data.list)
+          // Assuming response.data is an array of department objects
+          // You can now use this data to populate your UI or perform other operations
+        } else {
+          ElMessage.error(response.message)
+        }
+      } catch (error) {
+        console.log(error)
+        ElMessage.error('Failed to fetch department list, please try again later.')
+      }
+    }
+    fetchDepartmentList()
+  })
+
+  tableData = reactive<Department[]>([
     {
       id: 1,
-      date: '2016-05-02',
-      name: '人力资源部',
-      status: 1,
+      date: '2016-05-02 11:11:11',
+      name: '人力资源部11111111',
+      status: 0,
       sort: 1
     },
     {
@@ -190,7 +240,8 @@
 
   const resetForm = () => {
     formData.name = ''
-    formData.sort = '1'
+    formData.entityId = 4
+    formData.sort = 1
     formData.status = true
   }
 
@@ -220,16 +271,35 @@
   const submitForm = async () => {
     if (!formRef.value) return
 
-    await formRef.value.validate((valid) => {
+    await formRef.value.validate(async (valid) => {
       if (valid) {
-        const params = {
-          ...formData,
-          status: formData.status ? 1 : 0
+        // const params = {
+        //   ...formData,
+        //   status: formData.status ? 1 : 0
+        // }
+        try {
+          const res = await EntityService.addDepartment({
+            body: JSON.stringify({
+              entityId: formData.entityId,
+              name: formData.name,
+              sort: formData.sort,
+              parentId: formData.parentId,
+              status: formData.status ? 1 : 0
+            })
+          })
+          if (res.code === ApiStatus.success) {
+            ElMessage.success(dialogType.value === 'add' ? '添加成功' : '修改成功')
+            dialogVisible.value = false
+          } else {
+            ElMessage.error(res.message)
+          }
+        } catch (error) {
+          console.log(error)
+          ElMessage.error('新增部门失败，请稍后重试')
+          dialogVisible.value = false
         }
-        console.log('提交数据:', params)
-
-        ElMessage.success(dialogType.value === 'add' ? '添加成功' : '修改成功')
-        dialogVisible.value = false
+        // ElMessage.success(dialogType.value === 'add' ? '添加成功' : '修改成功')
+        // dialogVisible.value = false
       }
     })
   }

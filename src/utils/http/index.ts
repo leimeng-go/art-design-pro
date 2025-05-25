@@ -5,7 +5,7 @@ import EmojiText from '../emojo'
 
 const axiosInstance = axios.create({
   timeout: 15000, // 请求超时时间(毫秒)
-  baseURL: import.meta.env.VITE_API_URL, // API地址
+  baseURL: 'api', // API地址
   withCredentials: true, // 异步请求携带cookie
   transformRequest: [(data) => JSON.stringify(data)], // 请求数据转换为 JSON 字符串
   validateStatus: (status) => status >= 200 && status < 300, // 只接受 2xx 的状态码
@@ -29,12 +29,12 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig) => {
     const { accessToken } = useUserStore()
-
+    console.log('是否存在' + accessToken)
     // 如果 token 存在，则设置请求头
     if (accessToken) {
       request.headers.set({
         'Content-Type': 'application/json',
-        Authorization: accessToken
+        Authorization: 'Bearer ' + accessToken
       })
     }
 
@@ -50,9 +50,17 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error) => {
+    console.log(error.response)
     if (axios.isCancel(error)) {
       console.log('repeated request: ' + error.message)
     } else {
+      if (error.response?.status === 401) {
+        const router = useRouter()
+        const userStore = useUserStore()
+        // 清理用户信息
+        userStore.logOut()
+        router.push('/login')
+      }
       const errorMessage = error.response?.data.message
       ElMessage.error(
         errorMessage
