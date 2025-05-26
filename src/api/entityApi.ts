@@ -50,4 +50,44 @@ export class EntityService {
       }
     }
   }
+
+  // 修改部门
+  static async updateDepartment(options: { body: string }): Promise<BaseResult> {
+    try {
+      const response = await api.put<BaseResult>({
+        url: '/department/update',
+        data: JSON.parse(options.body),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      return response
+    } catch {
+      return {
+        code: 500,
+        message: '修改部门失败，请稍后重试',
+        data: null
+      }
+    }
+  }
+
+  // 删除部门
+  static async deleteDepartment(options: { params?: any }): Promise<BaseResult> {
+    try {
+      const response = await api.del<BaseResult>({
+        url: '/department/delete',
+        params: options.params,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      return response
+    } catch {
+      return {
+        code: 500,
+        message: '删除部门失败，请稍后重试',
+        data: null
+      }
+    }
+  }
 }

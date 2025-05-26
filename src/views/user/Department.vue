@@ -2,7 +2,7 @@
   <div class="page-content">
     <el-row :gutter="12">
       <el-col :xs="24" :sm="12" :lg="8">
-        <el-input placeholder="部门名称"></el-input>
+        <el-input v-model="searchName" placeholder="部门名称"></el-input>
       </el-col>
       <el-col :xs="24" :sm="12" :lg="8" class="el-col2">
         <el-button v-ripple>搜索</el-button>
@@ -14,7 +14,9 @@
       <template #default>
         <el-table-column prop="name" label="名称" />
         <el-table-column prop="sort" label="排序" sortable />
-        <el-table-column prop="date" label="日期" />
+        <!-- <el-table-column prop="date" label="日期" /> -->
+        <el-table-column prop="createTime" label="创建时间" />
+        <el-table-column prop="updateTime" label="更新时间" />
 
         <el-table-column label="状态" prop="status">
           <template #default="scope">
@@ -26,7 +28,7 @@
         <el-table-column fixed="right" label="操作" width="150px">
           <template #default="scope">
             <button-table type="edit" @click="showDialog('edit', scope.row)" />
-            <button-table type="delete" @click="deleteDepartment" />
+            <button-table type="delete" @click="deleteDepartment(scope.row.id)" />
           </template>
         </el-table-column>
       </template>
@@ -74,12 +76,16 @@
   const dialogVisible = ref(false)
 
   const formData = reactive({
+    id: undefined,
     entityId: 4,
     name: '',
-    sort: 1,
+    sort: '1',
     parentId: 0,
     status: true
   })
+
+  const searchName = ref('')
+
   interface Department {
     id: number
     name: string
@@ -88,142 +94,41 @@
     createTime?: string
     updateTime?: string
     date?: string
+    children?: Department[]
   }
 
-  let tableData = reactive<Department[]>([])
+  let tableData = ref<Department[]>([])
+
+  const fetchDepartmentList = async (name?: string) => {
+    try {
+      const response = await EntityService.getDepartmentList({
+        params: {
+          page: 1,
+          pageSize: 10,
+          ...(name ? { name } : {})
+        }
+      })
+      if (response.code === ApiStatus.success) {
+        console.log('Department list fetched successfully:', response.data)
+        console.log('response.data.list: ', response.data.list)
+        tableData.value = response.data.list
+      } else {
+        ElMessage.error(response.message)
+      }
+    } catch (error) {
+      console.log(error)
+      ElMessage.error('Failed to fetch department list, please try again later.')
+    }
+  }
+
+  // const searchDepartment = () => {
+  // fetchDepartmentList(searchName.value)
+  // }
 
   onMounted(() => {
     console.log('Department component is now mounted !')
-    const fetchDepartmentList = async () => {
-      try {
-        const response = await EntityService.getDepartmentList({
-          params: {
-            page: 1,
-            pageSize: 10
-          }
-          // Merge pagination parameters into options.params
-        })
-        if (response.code === ApiStatus.success) {
-          console.log('Department list fetched successfully:', response.data)
-          console.log(response.data.list)
-          // 清空数组
-          // tableData.length=0
-          // tableData.push(...response.data.list)
-          // Assuming response.data is an array of department objects
-          // You can now use this data to populate your UI or perform other operations
-        } else {
-          ElMessage.error(response.message)
-        }
-      } catch (error) {
-        console.log(error)
-        ElMessage.error('Failed to fetch department list, please try again later.')
-      }
-    }
     fetchDepartmentList()
   })
-
-  tableData = reactive<Department[]>([
-    {
-      id: 1,
-      date: '2016-05-02 11:11:11',
-      name: '人力资源部11111111',
-      status: 0,
-      sort: 1
-    },
-    {
-      id: 2,
-      date: '2016-05-04',
-      name: '公关部',
-      status: 1,
-      sort: 2
-    },
-    {
-      id: 3,
-      date: '2016-05-01',
-      name: '市场部',
-      status: 1,
-      sort: 3,
-      children: [
-        {
-          id: 31,
-          date: '2016-05-01',
-          name: '王小虎',
-          status: 1,
-          sort: 1
-        },
-        {
-          id: 32,
-          date: '2016-05-01',
-          name: '王小虎',
-          status: 0,
-          sort: 2
-        }
-      ]
-    },
-    {
-      id: 4,
-      date: '2016-05-03',
-      name: '财务部',
-      status: 1,
-      sort: 4
-    },
-    {
-      id: 5,
-      date: '2016-05-03',
-      name: '广告部',
-      status: 1,
-      sort: 5
-    },
-    {
-      id: 6,
-      date: '2016-05-03',
-      name: '营销部',
-      status: 1,
-      sort: 5
-    },
-    {
-      id: 7,
-      date: '2016-05-03',
-      name: '开发部',
-      status: 1,
-      sort: 5
-    },
-    {
-      id: 8,
-      date: '2016-05-03',
-      name: '测试部',
-      status: 1,
-      sort: 5
-    },
-    {
-      id: 9,
-      date: '2016-05-03',
-      name: '安全监察部',
-      status: 0,
-      sort: 5
-    },
-    {
-      id: 10,
-      date: '2016-05-03',
-      name: '设计部',
-      status: 1,
-      sort: 5
-    },
-    {
-      id: 11,
-      date: '2016-05-03',
-      name: '监事会',
-      status: 1,
-      sort: 5
-    },
-    {
-      id: 12,
-      date: '2016-05-03',
-      name: '董事会',
-      status: 1,
-      sort: 5
-    }
-  ])
 
   const formRef = ref<FormInstance>()
 
@@ -241,7 +146,7 @@
   const resetForm = () => {
     formData.name = ''
     formData.entityId = 4
-    formData.sort = 1
+    formData.sort = '1'
     formData.status = true
   }
 
@@ -250,22 +155,35 @@
     dialogVisible.value = true
 
     if (type === 'edit' && row) {
+      formData.id = row.id
       formData.name = row.name
       formData.sort = row.sort.toString()
       formData.status = row.status === 1
+      formData.parentId = row.parentId
     } else {
       resetForm()
     }
   }
 
-  const deleteDepartment = () => {
+  const deleteDepartment = (id: string) => {
     ElMessageBox.confirm('确定要删除该部门吗？', '删除部门', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'error'
-    }).then(() => {
-      console.log('删除部门')
+    }).then(async () => {
+      const res = await EntityService.deleteDepartment({
+        params: {
+          id: Number(id)
+        }
+      })
+      if (res.code === ApiStatus.success) {
+        ElMessage.success('删除部门成功')
+        fetchDepartmentList()
+      } else {
+        ElMessage.error(res.message)
+      }
     })
+    console.log('删除部门')
   }
 
   const submitForm = async () => {
@@ -273,33 +191,46 @@
 
     await formRef.value.validate(async (valid) => {
       if (valid) {
-        // const params = {
-        //   ...formData,
-        //   status: formData.status ? 1 : 0
-        // }
         try {
-          const res = await EntityService.addDepartment({
-            body: JSON.stringify({
-              entityId: formData.entityId,
-              name: formData.name,
-              sort: formData.sort,
-              parentId: formData.parentId,
-              status: formData.status ? 1 : 0
+          let res
+          if (dialogType.value === 'add') {
+            res = await EntityService.addDepartment({
+              body: JSON.stringify({
+                entityId: Number(formData.entityId),
+                name: formData.name,
+                sort: Number(formData.sort),
+                parentId: Number(formData.parentId ? formData.parentId : 0),
+                status: Number(formData.status)
+              })
             })
-          })
+          } else {
+            console.log('formData update data: ', formData)
+            res = await EntityService.updateDepartment({
+              body: JSON.stringify({
+                id: formData.id,
+                entityId: Number(formData.entityId),
+                name: formData.name,
+                sort: Number(formData.sort),
+                parentId: Number(formData.parentId ? formData.parentId : 0),
+                status: Number(formData.status)
+              })
+            })
+          }
           if (res.code === ApiStatus.success) {
             ElMessage.success(dialogType.value === 'add' ? '添加成功' : '修改成功')
             dialogVisible.value = false
+            fetchDepartmentList()
           } else {
             ElMessage.error(res.message)
+            fetchDepartmentList()
           }
         } catch (error) {
-          console.log(error)
-          ElMessage.error('新增部门失败，请稍后重试')
+          console.log('' + error)
+          ElMessage.error(
+            dialogType.value === 'add' ? '新增部门失败，请稍后重试' : '编辑部门失败，请稍后重试'
+          )
           dialogVisible.value = false
         }
-        // ElMessage.success(dialogType.value === 'add' ? '添加成功' : '修改成功')
-        // dialogVisible.value = false
       }
     })
   }
