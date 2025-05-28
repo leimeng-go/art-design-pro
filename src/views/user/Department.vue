@@ -5,7 +5,7 @@
         <el-input v-model="searchName" placeholder="部门名称"></el-input>
       </el-col>
       <el-col :xs="24" :sm="12" :lg="8" class="el-col2">
-        <el-button v-ripple>搜索</el-button>
+        <el-button v-ripple @click="searchDepartments">搜索</el-button>
         <el-button @click="showDialog('add')" v-ripple>新增部门</el-button>
       </el-col>
     </el-row>
@@ -48,13 +48,23 @@
           <el-input v-model="formData.sort" />
         </el-form-item>
         <el-form-item label="上级部门" prop="parent_id">
-          <el-select v-model="formData.parentId" placeholder="请选择上级部门">
-            <el-option label="请选择上级部门" value="" />
+          <el-select
+            v-model="formData.parentId"
+            placeholder="请选择上级部门"
+            @visible-change="handleParentSelectVisible"
+          >
+            <el-option label="请选择上级部门" :value="0" />
+            <el-option
+              v-for="item in filteredParentOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="状态" prop="status">
+        <el-form-item label="状态" prop="status">
           <el-switch v-model="formData.status" />
-        </el-form-item> -->
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -71,6 +81,7 @@
   import type { FormInstance, FormRules } from 'element-plus'
   import { EntityService } from '@/api/entityApi'
   import { ApiStatus } from '@/utils/http/status'
+  import { computed } from 'vue'
 
   const dialogType = ref('add')
   const dialogVisible = ref(false)
@@ -97,15 +108,15 @@
     children?: Department[]
   }
 
-  let tableData = ref<Department[]>([])
+  const tableData = ref<Department[]>([])
 
-  const fetchDepartmentList = async (name?: string) => {
+  const fetchDepartmentList = async (keyword?: string) => {
     try {
       const response = await EntityService.getDepartmentList({
         params: {
           page: 1,
           pageSize: 10,
-          ...(name ? { name } : {})
+          ...(keyword ? { keyword } : {})
         }
       })
       if (response.code === ApiStatus.success) {
@@ -121,9 +132,9 @@
     }
   }
 
-  // const searchDepartment = () => {
-  // fetchDepartmentList(searchName.value)
-  // }
+  const searchDepartments = () => {
+    fetchDepartmentList(searchName.value)
+  }
 
   onMounted(() => {
     console.log('Department component is now mounted !')
@@ -144,8 +155,10 @@
   })
 
   const resetForm = () => {
+    formData.parentId = 0
+    formData.id = undefined
     formData.name = ''
-    formData.entityId = 4
+    formData.entityId = 0
     formData.sort = '1'
     formData.status = true
   }
@@ -222,7 +235,6 @@
             fetchDepartmentList()
           } else {
             ElMessage.error(res.message)
-            fetchDepartmentList()
           }
         } catch (error) {
           console.log('' + error)
@@ -234,6 +246,42 @@
       }
     })
   }
+  interface TopDepartment {
+    id: number
+    name: string
+  }
+
+  const parentOptions = ref<TopDepartment[]>([])
+
+  // 获取所有部门用于上级部门选择
+  const fetchTopDepartments = async () => {
+    try {
+      const response = await EntityService.getTopDepartmentList({
+        body: JSON.stringify({
+          parentId: Number(formData.parentId)
+        })
+      })
+      if (response.code === ApiStatus.success) {
+        parentOptions.value = response.data.list || []
+      } else {
+        ElMessage.error(response.message)
+      }
+    } catch (error) {
+      console.log(error)
+      ElMessage.error('获取上级部门失败，请稍后重试')
+    }
+  }
+
+  // 下拉框显示时请求上级部门
+  const handleParentSelectVisible = (visible: boolean) => {
+    if (visible) {
+      fetchTopDepartments()
+    }
+  }
+
+  const filteredParentOptions = computed(() =>
+    parentOptions.value.filter((item) => item.id !== formData.id)
+  )
 </script>
 
 <style lang="scss" scoped>

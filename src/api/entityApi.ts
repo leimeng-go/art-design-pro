@@ -71,6 +71,25 @@ export class EntityService {
     }
   }
 
+  static async getTopDepartmentList(options: { body: string }): Promise<BaseResult> {
+    try {
+      const response = await api.post<BaseResult>({
+        url: '/department/top',
+        data: JSON.parse(options.body),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      return response
+    } catch {
+      return {
+        code: 500,
+        message: '获取上级部门失败，请稍后重试',
+        data: null
+      }
+    }
+  }
+
   // 删除部门
   static async deleteDepartment(options: { params?: any }): Promise<BaseResult> {
     try {
