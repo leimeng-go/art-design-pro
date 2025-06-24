@@ -10,7 +10,14 @@
       </el-col>
     </el-row>
 
-    <art-table :data="tableData">
+    <art-table
+      :data="tableData"
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :total="total"
+      @update:currentPage="handlePageChange"
+      @update:pageSize="handlePageSizeChange"
+    >
       <template #default>
         <el-table-column prop="name" label="名称" />
         <el-table-column prop="sort" label="排序" sortable />
@@ -81,7 +88,8 @@
   import type { FormInstance, FormRules } from 'element-plus'
   import { EntityService } from '@/api/entityApi'
   import { ApiStatus } from '@/utils/http/status'
-  import { computed } from 'vue'
+  // import { useRoute } from 'vue-router'
+  import { onMounted, ref, computed, reactive } from 'vue'
 
   const dialogType = ref('add')
   const dialogVisible = ref(false)
@@ -109,13 +117,20 @@
   }
 
   const tableData = ref<Department[]>([])
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const total = ref(0)
 
-  const fetchDepartmentList = async (keyword?: string) => {
+  const fetchDepartmentList = async (
+    keyword?: string,
+    page = currentPage.value,
+    size = pageSize.value
+  ) => {
     try {
       const response = await EntityService.getDepartmentList({
         params: {
-          page: 1,
-          pageSize: 10,
+          page,
+          pageSize: size,
           ...(keyword ? { keyword } : {})
         }
       })
@@ -123,6 +138,7 @@
         console.log('Department list fetched successfully:', response.data)
         console.log('response.data.list: ', response.data.list)
         tableData.value = response.data.list
+        total.value = response.data.total || 0
       } else {
         ElMessage.error(response.message)
       }
@@ -133,13 +149,23 @@
   }
 
   const searchDepartments = () => {
-    fetchDepartmentList(searchName.value)
+    currentPage.value = 1
+    fetchDepartmentList(searchName.value, 1, pageSize.value)
   }
 
   onMounted(() => {
-    console.log('Department component is now mounted !')
+    console.log('Department component mounted !')
     fetchDepartmentList()
   })
+
+  // const route = useRoute()
+  // watch(
+  //   () => route.fullPath,
+  //   () => {
+  //     console.log('Department component route changed !')
+  //     fetchDepartmentList()
+  //   }
+  // )
 
   const formRef = ref<FormInstance>()
 
@@ -282,6 +308,17 @@
   const filteredParentOptions = computed(() =>
     parentOptions.value.filter((item) => item.id !== formData.id)
   )
+
+  const handlePageChange = (val: number) => {
+    currentPage.value = val
+    fetchDepartmentList(searchName.value, val, pageSize.value)
+  }
+
+  const handlePageSizeChange = (val: number) => {
+    pageSize.value = val
+    currentPage.value = 1
+    fetchDepartmentList(searchName.value, 1, val)
+  }
 </script>
 
 <style lang="scss" scoped>

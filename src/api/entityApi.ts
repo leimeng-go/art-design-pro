@@ -95,10 +95,7 @@ export class EntityService {
     try {
       const response = await api.del<BaseResult>({
         url: '/department/delete',
-        params: options.params,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        params: options.params
       })
       return response
     } catch {

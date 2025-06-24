@@ -31,11 +31,10 @@ export class UserService {
   }
 
   // 获取用户信息
-  static async getUserInfo(userid: string): Promise<BaseResult<UserInfo>> {
+  static async getUserInfo(): Promise<BaseResult<UserInfo>> {
     try {
       const response = await api.get<BaseResult<UserInfo>>({
-        url: '/user/info',
-        params: { userid }
+        url: '/user/info'
       })
       return response
     } catch {

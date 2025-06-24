@@ -183,7 +183,7 @@
           if (res.code === ApiStatus.success && res.data) {
             // 设置 token
             userStore.setToken(res.data.token)
-
+            console.log('登陆后获取用户信息')
             // 获取用户信息
             const userRes = await UserService.getUserInfo(res.data.userId)
             if (userRes.code === ApiStatus.success) {

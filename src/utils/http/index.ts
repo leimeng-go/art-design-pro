@@ -60,13 +60,12 @@ axiosInstance.interceptors.response.use(
         // 清理用户信息
         userStore.logOut()
         router.push('/login')
+      } else {
+        const errorMessage = error.response?.data.message
+        ElMessage.error(
+          errorMessage ? `${errorMessage} ${EmojiText[500]}` : `服务器异常！${EmojiText[500]}`
+        )
       }
-      const errorMessage = error.response?.data.message
-      ElMessage.error(
-        errorMessage
-          ? `${errorMessage} ${EmojiText[500]}`
-          : `请求超时或服务器异常！${EmojiText[500]}`
-      )
     }
     return Promise.reject(error)
   }

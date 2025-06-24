@@ -2,7 +2,7 @@
   <div class="page-content">
     <el-row>
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-input placeholder="部门名称"></el-input>
+        <el-input placeholder="角色名称"></el-input>
       </el-col>
       <div style="width: 12px"></div>
       <el-col :xs="24" :sm="12" :lg="6" class="el-col2">
@@ -11,10 +11,17 @@
       </el-col>
     </el-row>
 
-    <art-table :data="tableData">
+    <art-table
+      :data="tableData"
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :total="total"
+      @update:currentPage="handlePageChange"
+      @update:pageSize="handlePageSizeChange"
+    >
       <template #default>
         <el-table-column label="角色名称" prop="name" />
-        <el-table-column label="描述" prop="des" />
+        <el-table-column label="描述" prop="description" />
         <el-table-column label="状态" prop="status">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'primary' : 'info'">
@@ -22,9 +29,14 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" prop="date">
+        <el-table-column label="创建时间" prop="createTime">
           <template #default="scope">
-            {{ formatDate(scope.row.date) }}
+            {{ formatDate(scope.row.createTime) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="更新时间" prop="updateTime">
+          <template #default="scope">
+            {{ formatDate(scope.row.updateTime) }}
           </template>
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="100px">
@@ -53,8 +65,8 @@
         <el-form-item label="角色名称" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
-        <el-form-item label="描述" prop="des">
-          <el-input v-model="form.des" type="textarea" :rows="3" />
+        <el-form-item label="描述" prop="description">
+          <el-input v-model="form.description" type="textarea" :rows="3" />
         </el-form-item>
         <el-form-item label="状态">
           <el-switch v-model="form.status" />
@@ -89,6 +101,9 @@
   import { ElMessage, ElMessageBox } from 'element-plus'
   import type { FormInstance, FormRules } from 'element-plus'
   import { formatMenuTitle } from '@/utils/menu'
+  import { RoleService } from '@/api/roleApi'
+  import { ApiStatus } from '@/utils/http/status'
+  import { onActivated, ref, computed, reactive } from 'vue'
 
   const dialogVisible = ref(false)
   const permissionDialog = ref(false)
@@ -104,106 +119,64 @@
     des: [{ required: true, message: '请输入角色描述', trigger: 'blur' }]
   })
 
+  const handlePageChange = (val: number) => {
+    currentPage.value = val
+    fetchRoleList(searchName.value, val, pageSize.value)
+  }
+  const handlePageSizeChange = (val: number) => {
+    pageSize.value = val
+    currentPage.value = 1
+    fetchRoleList(searchName.value, 1, val)
+  }
+
   const form = reactive({
     id: '',
     name: '',
-    des: '',
+    description: '',
     status: true
   })
 
-  const tableData = reactive([
-    {
-      name: '超级管理员',
-      allow: '全部权限',
-      des: '拥有系统全部权限',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '董事会部',
-      allow: '自定义',
-      des: '负责董事会部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '监事会部',
-      allow: '自定义',
-      des: '负责监事会部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 0
-    },
-    {
-      name: '市场部',
-      allow: '自定义',
-      des: '负责市场部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '人力资源部',
-      allow: '自定义',
-      des: '负责人力资源部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '财务部',
-      allow: '自定义',
-      des: '负责财务部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '公关部',
-      allow: '自定义',
-      des: '负责公关部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 0
-    },
-    {
-      name: '广告部',
-      allow: '自定义',
-      des: '负责广告部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '营销',
-      allow: '自定义',
-      des: '负责营销相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '设计部',
-      allow: '自定义',
-      des: '负责设计部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '开发部',
-      allow: '自定义',
-      des: '负责开发部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '测试部',
-      allow: '自定义',
-      des: '负责测试部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
-    },
-    {
-      name: '安保部',
-      allow: '自定义',
-      des: '负责安保部相关工作的管理者',
-      date: '2021-01-08 12:30:45',
-      status: 1
+  interface Role {
+    id: string
+    name: string
+    des: string
+    status: boolean
+  }
+
+  const tableData = ref<Role[]>([])
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const total = ref(0)
+
+  const searchName = ref('')
+
+  const fetchRoleList = async (
+    keyword?: string,
+    page = currentPage.value,
+    size = pageSize.value
+  ) => {
+    try {
+      const res = await RoleService.getRoleList({
+        params: {
+          page,
+          pageSize: size,
+          ...(keyword ? { keyword } : {})
+        }
+      })
+      if (res.code === ApiStatus.success) {
+        tableData.value = res.data.list
+        total.value = res.data.total || 0
+      }
+    } catch (error) {
+      console.log(error)
+      ElMessage.error('Failed to fetch role list, please try again later.')
     }
-  ])
+  }
+
+  onActivated(() => {
+    console.log('Role component activated !')
+    fetchRoleList()
+  })
 
   const dialogType = ref('add')
 
@@ -214,12 +187,12 @@
     if (type === 'edit' && row) {
       form.id = row.id
       form.name = row.name
-      form.des = row.des
+      form.description = row.description
       form.status = row.status === 1
     } else {
       form.id = ''
       form.name = ''
-      form.des = ''
+      form.description = ''
       form.status = true
     }
   }
@@ -230,7 +203,7 @@
     } else if (item.key === 'edit') {
       showDialog('edit', row)
     } else if (item.key === 'delete') {
-      deleteRole()
+      deleteRole(row.id)
     }
   }
 
@@ -243,25 +216,71 @@
     label: (data: any) => formatMenuTitle(data.meta?.title) || ''
   }
 
-  const deleteRole = () => {
+  const deleteRole = (id: string) => {
     ElMessageBox.confirm('确定删除该角色吗？', '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'error'
-    }).then(() => {
-      ElMessage.success('删除成功')
     })
+      .then(async () => {
+        const res = await RoleService.deleteRole({
+          params: {
+            id: Number(id)
+          }
+        })
+        if (res.code === ApiStatus.success) {
+          ElMessage.success('删除角色成功')
+          fetchRoleList()
+        } else {
+          ElMessage.error(res.message)
+        }
+      })
+      .catch((error) => {
+        console.error(error)
+        ElMessage.error('删除失败')
+      })
+    // ElMessage.success('删除成功')
   }
 
   const handleSubmit = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
 
-    await formEl.validate((valid) => {
+    await formEl.validate(async (valid) => {
       if (valid) {
-        const message = dialogType.value === 'add' ? '新增成功' : '修改成功'
-        ElMessage.success(message)
-        dialogVisible.value = false
-        formEl.resetFields()
+        if (dialogType.value === 'add') {
+          const res = await RoleService.addRole({
+            body: JSON.stringify({
+              name: form.name,
+              description: form.description,
+              status: form.status ? 1 : 0
+            })
+          })
+          if (res.code === ApiStatus.success) {
+            ElMessage.success('新增角色成功')
+            dialogVisible.value = false
+            formEl.resetFields()
+            fetchRoleList()
+          } else {
+            ElMessage.error(res.message)
+          }
+        } else {
+          const res = await RoleService.updateRole({
+            body: JSON.stringify({
+              id: form.id,
+              name: form.name,
+              description: form.description,
+              status: form.status ? 1 : 0
+            })
+          })
+          if (res.code === ApiStatus.success) {
+            ElMessage.success('修改角色成功')
+            dialogVisible.value = false
+            formEl.resetFields()
+            fetchRoleList()
+          } else {
+            ElMessage.error(res.message)
+          }
+        }
       }
     })
   }
