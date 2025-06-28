@@ -1,16 +1,24 @@
 <template>
-  <BasicBanner
+  <ArtBasicBanner
     class="banner"
-    :title="`欢迎回来 ${userInfo.username}`"
-    :showButton="false"
+    height="13.3rem"
+    :title="`欢迎回来 ${userInfo.userName}`"
     backgroundColor="var(--el-color-primary-light-9)"
     titleColor="var(--art-gray-900)"
-    subtitleColor="#666"
-    style="height: 13.3rem"
-    :backgroundImage="bannerCover"
-    :showDecoration="false"
-    imgWidth="18rem"
-    imgBottom="-7.5rem"
+    :decoration="false"
+    :meteorConfig="{
+      enabled: true,
+      count: 10
+    }"
+    :buttonConfig="{
+      show: false,
+      text: ''
+    }"
+    :imageConfig="{
+      src: bannerCover,
+      width: '18rem',
+      bottom: '-7.5rem'
+    }"
     @click="handleBannerClick"
   >
     <div class="banner-slot">
@@ -23,11 +31,11 @@
         <p class="subtitle">较昨日</p>
       </div>
     </div>
-  </BasicBanner>
+  </ArtBasicBanner>
 </template>
 
 <script setup lang="ts">
-  import bannerCover from '@imgs/login/lf_icon2.png'
+  import bannerCover from '@imgs/login/lf_icon2.webp'
   import { useUserStore } from '@/store/modules/user'
   const userStore = useUserStore()
 
@@ -38,8 +46,11 @@
 
 <style lang="scss" scoped>
   .banner {
+    justify-content: center;
+
     .banner-slot {
       display: flex;
+      margin-top: 24px;
 
       .item {
         margin-right: 30px;

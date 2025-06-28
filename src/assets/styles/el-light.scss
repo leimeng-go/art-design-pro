@@ -11,7 +11,6 @@
       'success': ('base': #13deb9),
       'warning': ('base': #ffae1f),
       'danger': ('base': #ff4d4f),
-      'info': ('base': #539bff),
       'error': ('base': #fa896b)
     ),
   $button: (
@@ -20,10 +19,6 @@
     'hover-border-color': var(--el-color-primary),
     'border-color': var(--el-color-primary),
     'text-color': var(--el-color-primary)
-  ),
-  $dialog: (
-    //
-    'border-radius': '14px'
   ),
   $messagebox: (
     //

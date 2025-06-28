@@ -6,7 +6,15 @@
     </div>
     <div class="table">
       <el-scrollbar style="height: 21.55rem">
-        <art-table :data="tableData" :pagination="false" style="margin-top: 0 !important">
+        <art-table
+          :data="tableData"
+          :pagination="false"
+          style="margin-top: 0 !important"
+          size="large"
+          :border="false"
+          :stripe="false"
+          :show-header-background="false"
+        >
           <template #default>
             <el-table-column label="产品" prop="product" width="220px">
               <template #default="scope">
@@ -52,12 +60,12 @@
   import { reactive, onMounted } from 'vue'
 
   // 导入产品图片
-  import product1 from '@/assets/img/3d/icon1.png'
-  import product2 from '@/assets/img/3d/icon2.png'
-  import product3 from '@/assets/img/3d/icon3.png'
-  import product4 from '@/assets/img/3d/icon4.png'
-  import product5 from '@/assets/img/3d/icon5.png'
-  import product6 from '@/assets/img/3d/icon6.png'
+  import product1 from '@/assets/img/3d/icon1.webp'
+  import product2 from '@/assets/img/3d/icon2.webp'
+  import product3 from '@/assets/img/3d/icon3.webp'
+  import product4 from '@/assets/img/3d/icon4.webp'
+  import product5 from '@/assets/img/3d/icon5.webp'
+  import product6 from '@/assets/img/3d/icon6.webp'
 
   const tableData = reactive([
     {

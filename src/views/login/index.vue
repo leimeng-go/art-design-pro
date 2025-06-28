@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="login">
     <div class="left-wrap">
       <left-view></left-view>
@@ -250,4 +250,4 @@
 
 <style lang="scss" scoped>
   @use './index';
-</style>
+</style> -->

@@ -9,6 +9,9 @@ import { fileURLToPath } from 'url'
 // import viteImagemin from 'vite-plugin-imagemin'
 // import { visualizer } from 'rollup-plugin-visualizer'
 
+// https://devtools.vuejs.org/getting-started/introduction
+import vueDevTools from 'vite-plugin-vue-devtools'
+
 export default ({ mode }) => {
   // 当前的工作目录为root
   const root = process.cwd()
@@ -50,7 +53,6 @@ export default ({ mode }) => {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         '@views': resolvePath('src/views'),
-        '@comps': resolvePath('src/components'),
         '@imgs': resolvePath('src/assets/img'),
         '@icons': resolvePath('src/assets/icons'),
         '@utils': resolvePath('src/utils'),
@@ -141,7 +143,7 @@ export default ({ mode }) => {
         ext: '.gz', // 压缩后的文件名后缀
         threshold: 10240, // 只有大小大于该值的资源会被处理 10240B = 10KB
         deleteOriginFile: false // 压缩后是否删除原文件
-      })
+      }),
       // 图片压缩
       // viteImagemin({
       //   verbose: true, // 是否在控制台输出压缩结果
@@ -177,6 +179,7 @@ export default ({ mode }) => {
       //     ]
       //   }
       // })
+      vueDevTools()
     ],
     // 预加载项目必需的组件，vite会在启动时预先构建指定的依赖项，这些依赖项会被打包成单个文件，以减少模块解析和请求的开销
     optimizeDeps: {
@@ -257,7 +260,14 @@ export default ({ mode }) => {
         'element-plus/es/components/progress/style/css',
         'element-plus/es/components/image-viewer/style/css',
         'element-plus/es/components/empty/style/css',
-        'element-plus/es/components/segmented/style/css'
+        'element-plus/es/components/segmented/style/css',
+        'element-plus/es/components/calendar/style/css',
+        'element-plus/es/components/message/style/css',
+        'xlsx',
+        'file-saver',
+        'element-plus/es/components/timeline/style/css',
+        'element-plus/es/components/timeline-item/style/css',
+        'vue-img-cutter'
       ]
     },
     css: {

@@ -1,6 +1,13 @@
 <template>
-  <div class="region active-user art-custom-card">
-    <div class="chart" ref="chartRef"></div>
+  <div class="card art-custom-card">
+    <ArtBarChart
+      class="chart"
+      barWidth="50%"
+      height="13.7rem"
+      :showAxisLine="false"
+      :data="[160, 100, 150, 80, 190, 100, 175, 120, 160]"
+      :xAxisData="['1', '2', '3', '4', '5', '6', '7', '8', '9']"
+    />
     <div class="text">
       <h3 class="box-title">用户概述</h3>
       <p class="subtitle">比上周 <span class="text-success">+23%</span></p>
@@ -16,131 +23,18 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, onUnmounted } from 'vue'
-  import * as echarts from 'echarts'
-  import { useECharts } from '@/utils/echarts/useECharts'
-  import { useSettingStore } from '@/store/modules/setting'
-
-  const chartRef = ref<HTMLDivElement | null>(null)
-  const { setOptions, removeResize, resize } = useECharts(chartRef as Ref<HTMLDivElement>)
-  const settingStore = useSettingStore()
-  const menuOpen = computed(() => settingStore.menuOpen)
-  import { getCssVariable } from '@/utils/utils'
-
-  // 收缩菜单时，重新计算图表大小
-  watch(menuOpen, () => {
-    const delays = [100, 200, 300]
-    delays.forEach((delay) => {
-      setTimeout(resize, delay)
-    })
-  })
-
-  const store = useSettingStore()
-  const isDark = computed(() => store.isDark)
-
   const list = [
     { name: '总用户量', num: '32k' },
     { name: '总访问量', num: '128k' },
     { name: '日访问量', num: '1.2k' },
     { name: '周同比', num: '+5%' }
   ]
-
-  const createChart = () => {
-    setOptions({
-      grid: {
-        left: '0',
-        right: '4%',
-        bottom: '0%',
-        top: '5px',
-        containLabel: true
-      },
-      yAxis: {
-        type: 'value',
-        axisLabel: {
-          show: true,
-          color: '#999',
-          fontSize: 13
-        },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : '#EFF1F3',
-            width: 1,
-            type: 'dashed'
-          }
-        },
-        axisLine: {
-          show: true,
-          lineStyle: {
-            color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : '#EFF1F3',
-            width: 1
-          }
-        }
-      },
-      xAxis: {
-        type: 'category',
-        data: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        boundaryGap: [0, 0.01],
-        splitLine: {
-          show: false
-        },
-        axisLine: {
-          show: true,
-          lineStyle: {
-            color: isDark.value ? 'rgba(255, 255, 255, 0.1)' : '#EFF1F3',
-            width: 1
-          }
-        },
-        axisLabel: {
-          show: true,
-          color: '#999',
-          fontSize: 13
-        }
-      },
-      series: [
-        {
-          data: [160, 100, 150, 80, 190, 100, 175, 120, 160],
-          type: 'bar',
-          barMaxWidth: 36,
-          itemStyle: {
-            borderRadius: [6, 6, 6, 6],
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              {
-                offset: 0,
-                color: getCssVariable('--el-color-primary-light-4')
-              },
-              {
-                offset: 1,
-                color: getCssVariable('--el-color-primary')
-              }
-            ])
-          }
-        }
-      ]
-    })
-  }
-
-  onMounted(() => {
-    createChart()
-  })
-
-  onUnmounted(() => {
-    removeResize()
-  })
 </script>
 
 <style lang="scss" scoped>
-  .dark {
-    .region {
-      .chart {
-        background: none;
-      }
-    }
-  }
-
-  .region {
+  .card {
     box-sizing: border-box;
-    width: 42%;
+    width: 100%;
     height: 420px;
     padding: 16px;
 
@@ -148,14 +42,7 @@
       box-sizing: border-box;
       width: 100%;
       height: 220px;
-      padding: 20px 0 20px 20px;
-      // 跟随系统主色
-      // background-image: linear-gradient(
-      //   90deg,
-      //   var(--el-color-primary-light-1),
-      //   var(--el-color-primary-light-3),
-      //   var(--el-color-primary-light-1)
-      // );
+      padding: 10px;
       border-radius: calc(var(--custom-radius) / 2 + 4px) !important;
     }
 
@@ -203,9 +90,17 @@
     }
   }
 
+  .dark {
+    .card {
+      .chart {
+        background: none;
+      }
+    }
+  }
+
   @media screen and (max-width: $device-phone) {
     .dark {
-      .active-user {
+      .card {
         .chart {
           padding: 15px 0 0 !important;
         }

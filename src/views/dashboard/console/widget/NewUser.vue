@@ -1,5 +1,5 @@
 <template>
-  <div class="region new-user art-custom-card">
+  <div class="card art-custom-card">
     <div class="card-header">
       <div class="title">
         <h4 class="box-title">新用户</h4>
@@ -11,7 +11,15 @@
         <el-radio-button value="今年" label="今年"></el-radio-button>
       </el-radio-group>
     </div>
-    <art-table :data="tableData" :pagination="false">
+    <art-table
+      class="table"
+      :data="tableData"
+      :pagination="false"
+      size="large"
+      :border="false"
+      :stripe="false"
+      :show-header-background="false"
+    >
       <template #default>
         <el-table-column label="头像" prop="avatar" width="150px">
           <template #default="scope">
@@ -41,12 +49,12 @@
 
 <script setup lang="ts">
   import { onMounted, ref, reactive } from 'vue-demi'
-  import avatar1 from '@/assets/img/avatar/avatar1.jpg'
-  import avatar2 from '@/assets/img/avatar/avatar2.jpg'
-  import avatar3 from '@/assets/img/avatar/avatar3.jpg'
-  import avatar4 from '@/assets/img/avatar/avatar4.jpg'
-  import avatar5 from '@/assets/img/avatar/avatar5.jpg'
-  import avatar6 from '@/assets/img/avatar/avatar6.jpg'
+  import avatar1 from '@/assets/img/avatar/avatar1.webp'
+  import avatar2 from '@/assets/img/avatar/avatar2.webp'
+  import avatar3 from '@/assets/img/avatar/avatar3.webp'
+  import avatar4 from '@/assets/img/avatar/avatar4.webp'
+  import avatar5 from '@/assets/img/avatar/avatar5.webp'
+  import avatar6 from '@/assets/img/avatar/avatar6.webp'
 
   const radio2 = ref('本月')
 
@@ -128,7 +136,7 @@
 </script>
 
 <style lang="scss">
-  .region {
+  .card {
     // 进度动画
     .el-progress-bar__inner {
       transition: all 1s !important;
@@ -138,33 +146,21 @@
       color: var(--el-color-primary) !important;
       background: transparent !important;
     }
-
-    .any-table {
-      .el-table {
-        thead {
-          tr {
-            height: 55px !important;
-          }
-        }
-
-        tr {
-          height: 55px !important;
-        }
-      }
-    }
   }
 </style>
 
 <style lang="scss" scoped>
-  .region {
-    width: 50%;
-
-    .any-table {
-      box-shadow: none;
-    }
+  .card {
+    width: 100%;
+    height: 510px;
+    overflow: hidden;
 
     .card-header {
       padding-left: 25px !important;
+    }
+
+    :deep(.el-table__body tr:last-child td) {
+      border-bottom: none !important;
     }
 
     .avatar {
@@ -175,12 +171,6 @@
 
     .user-name {
       margin-left: 10px;
-    }
-  }
-
-  @media screen and (max-width: $device-notebook) {
-    .region {
-      width: 46%;
     }
   }
 </style>
